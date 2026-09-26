@@ -15,7 +15,8 @@ qsa('.login-option').forEach(b=>b.onclick=()=>selectRole(b.dataset.role));
 qs('#backBtn').onclick=()=>{
   role=null;
   qs('#loginBox').classList.remove('show');
-  qsa('.login-option').forEach(b=>b.disabled=false);
+  qsa('.login-option').forEach(b=>{b.disabled=false;b.classList.remove('active');});
+  qs('#loginIntro')?.classList.remove('hidden');
 };
 qs('#loginForm').onsubmit=async e=>{
   e.preventDefault();
@@ -37,14 +38,15 @@ function selectRole(r){
   qs('#loginTitle').textContent=titles[r];
   qs('#loginIdLabel').textContent='Account';
   qs('#loginId').type='email';
-  qs('#loginId').placeholder=r==='ward'?'e.g. c10@nightmemo.local':'Account email';
+  qs('#loginId').placeholder='';
   qs('#loginId').value=DB_MODE==='demo'?defaults[r]:'';
   qs('#password').value=DB_MODE==='demo'?'demo':'';
   qs('#demoHint').classList.toggle('hidden',DB_MODE!=='demo');
   if(DB_MODE==='demo'){
-    qs('#demoHint').textContent='Demo mode: password “demo”. Ward accounts use the full account, e.g. c10@nightmemo.local or h6@nightmemo.local.';
+    qs('#demoHint').textContent='Demo mode is enabled. Password: demo.';
   }
   qs('#loginBox').classList.add('show');
-  qsa('.login-option').forEach(b=>b.disabled=b.dataset.role!==r);
+  qs('#loginIntro')?.classList.add('hidden');
+  qsa('.login-option').forEach(b=>{b.disabled=false;b.classList.toggle('active',b.dataset.role===r);});
   setTimeout(()=>qs('#loginId').focus(),30);
 }

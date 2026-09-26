@@ -1,0 +1,23 @@
+.manager-page .legacy-shell{max-width:1500px}
+.manager-controls{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.manager-controls .field{min-width:180px}
+.manager-summary{min-width:1180px;font-size:.82rem}
+.manager-summary th,.manager-summary td{text-align:center}
+.manager-summary .ward-link{text-align:left;font-weight:800;color:#0b4fa3;cursor:pointer;text-decoration:underline}
+.manager-summary .ward-link:hover{background:#e8eef8}
+.manager-summary tr.missing td{background:#fff0ee;color:#8a1f1f}
+.manager-summary tr.submitted td{background:#f4fff5}
+.summary-title{text-align:center;margin:0 0 10px}
+.summary-title h1{margin:0;font-size:1.35rem;text-decoration:underline;font-weight:700}
+.summary-title .summary-date{font-size:.9rem;margin-top:2px}
+.summary-section{margin-bottom:18px}.summary-section h2{font-size:1.05rem;color:#00008b;margin:0 0 7px}
+.manager-full-toolbar{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:12px}
+.manager-full-toolbar .field{min-width:200px}
+#fullReportBody{min-height:220px}
+.full-report{font-size:.9rem;background:#fff}
+.report-head{display:flex;justify-content:space-between;gap:16px;border-bottom:3px solid #223f5f;padding-bottom:8px;margin-bottom:12px}.report-head h2{margin:0}.report-contact{text-align:right}
+.report-grid{display:grid;gap:10px;margin-bottom:12px}.report-grid.three{grid-template-columns:repeat(3,1fr)}.report-grid.two{grid-template-columns:repeat(2,1fr)}
+.full-report section,.report-grid>div{border:1px solid #bfc7d0;padding:10px;margin-bottom:10px}.full-report h3{margin:0 0 8px;color:#193d61}.full-report h4{margin:10px 0 5px}
+.full-report dl{display:grid;grid-template-columns:minmax(120px,1fr) 1fr;margin:0}.full-report dt,.full-report dd{margin:0;padding:4px;border-bottom:1px dotted #d8dde3}.full-report dt{font-weight:700}.wide-dl{grid-template-columns:220px 1fr!important}.nurse-list{margin:0;padding-left:20px}.full-report footer{text-align:right;color:#666;font-size:.75rem;margin-top:8px}
+.manager-empty-state{text-align:center;color:#777;padding:50px 20px}
+@media(max-width:900px){.manager-summary{min-width:1050px}.report-grid.three,.report-grid.two{grid-template-columns:1fr}.report-head{display:block}.report-contact{text-align:left;margin-top:6px}}

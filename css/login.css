@@ -1,0 +1,17 @@
+body.login-page{min-height:100vh;display:grid;place-items:center;padding:20px;background:var(--legacy-workspace)}
+.login-shell{width:min(920px,96vw)}
+.login-brand-panel{padding:22px 24px 16px;text-align:center;background:var(--legacy-workspace)}
+.login-brand-panel h1{margin:0 0 4px;color:#00008b;font-size:1.65rem}
+.login-brand-panel p{margin:0;color:#666;font-size:.92rem}
+.login-role-tabs{justify-content:center}
+.login-option{min-width:180px}
+.login-box{display:none;padding:20px;max-width:520px;margin:0 auto}
+.login-box.show{display:block}
+.login-box h2{margin:0 0 14px;color:#00008b;font-size:1.25rem;text-align:center}
+.login-form-row{margin-bottom:12px}
+.login-form-row label{display:block;font-weight:700;margin-bottom:4px}
+.login-form-row input{width:100%}
+.login-actions{display:flex;justify-content:center;gap:16px;margin-top:18px}
+.login-demo{margin:0 0 12px}
+.login-role-help{font-size:.78rem;color:#666;text-align:center;margin-top:6px}
+@media(max-width:720px){.login-role-tabs{justify-content:flex-start}.login-option{min-width:150px}.login-brand-panel{padding-inline:12px}}

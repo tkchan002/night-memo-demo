@@ -1,0 +1,12 @@
+.maintenance-page .legacy-shell{max-width:1500px}
+.maint-page{display:none}.maint-page.active{display:block}
+.maint-toolbar{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.ward-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.ward-card{border:1px solid #aaa;background:#f8f7f1;padding:10px;box-shadow:inset 1px 1px 0 #fff}
+.ward-card h3{margin:0 0 5px;color:#00008b;font-size:1.05rem}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}.dot.active{background:#25823a}.dot.closed{background:#888}
+.audit-row{padding:8px 0;border-bottom:1px solid #ccc;font-size:.86rem}.audit-row code{color:#333}
+#capacityHistory,#maintStaffTable{margin-top:14px}
+.maintenance-description{color:#666;font-size:.88rem;margin:0 0 12px}
+.maintenance-tabs .tab{min-width:100px}
+@media(max-width:800px){.ward-cards{grid-template-columns:1fr}.maintenance-tabs .tab{min-width:auto}}
