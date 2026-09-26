@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Patrol Night</title><link rel="stylesheet" href="./css/app.css"><link rel="stylesheet" href="./css/print.css"></head>
+<body>
+<div class="app-shell">
+<header class="topbar no-print"><div class="brand-mark">NM</div><div><div class="top-title" id="appTitle">Patrol Night</div><div class="top-subtitle" id="appSubtitle">Full ward reports and nightly summary</div></div><div class="top-spacer"></div><div id="modeBadge"></div><span class="user-badge" id="userBadge"></span><button class="btn ghost" id="refreshBtn">Refresh</button><button class="btn ghost" id="printBtn">Print</button><button class="btn ghost" id="logoutBtn">Logout</button></header>
+<main class="content"><section class="panel"><div class="panel-body">
+  <div class="manager-top manager-controls no-print"><div class="field" style="width:210px"><label>Night Memo Date</label><input id="reportDate" type="date"></div><div class="field" style="width:180px"><label>Memo Section</label><select id="memoSection"><option>Male</option><option>Female</option><option>Other</option></select></div><div class="status-note">Click any ward name to read the complete ward report.</div></div>
+  <div id="summaryPrintArea">
+    <div style="text-align:center;margin-bottom:10px"><h1 style="margin:0;font-size:1.35rem">Night Memo (<span id="sectionTitle">Male</span>)</h1><div id="printDateLabel"></div></div>
+    <section class="summary-section"><div class="table-scroll"><table class="data-table manager-summary"><thead><tr><th rowspan="2">Ward</th><th colspan="3">Admission</th><th colspan="3">Discharge</th><th rowspan="2">Total Patient</th><th rowspan="2">Empty Bed</th><th rowspan="2">Vent Case</th><th rowspan="2">BiPAP Case</th><th rowspan="2">HFNC Case</th><th rowspan="2">Staff<br>AM/PM</th><th rowspan="2" class="screen-only-col">Status</th></tr><tr><th>E/C</th><th>C/C</th><th>T/I</th><th>Home</th><th>T/O</th><th>Death</th></tr></thead><tbody id="summaryRows"></tbody></table></div></section>
+    <section class="summary-section"><h2>Infection / Device Details</h2><div class="table-scroll"><table class="data-table manager-summary"><thead><tr><th>Ward</th><th>COVID-19</th><th>CRE</th><th>VRE</th><th>MDRA</th><th>CD</th><th>Influenza</th><th>HD</th><th>CAPD</th><th>Early Bird</th></tr></thead><tbody id="infectionRows"></tbody></table></div></section>
+  </div>
+</div></section></main></div>
+<div class="drawer-backdrop" id="reportDrawer"><aside class="drawer"><div class="drawer-head no-print"><h2 id="drawerTitle">Full Report</h2><button class="btn secondary small" id="drawerPrint">Print Full Report</button><button class="btn secondary small" id="drawerClose">Close</button></div><div class="drawer-body" id="drawerBody"></div></aside></div>
+<script type="module" src="./manager.js"></script>
+</body></html>

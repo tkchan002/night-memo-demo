@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ward Night Memo</title>
+  <link rel="stylesheet" href="./css/app.css"><link rel="stylesheet" href="./css/print.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar no-print">
+    <div class="brand-mark">NM</div><div><div class="top-title" id="appTitle">Ward Night Memo</div><div class="top-subtitle" id="appSubtitle"></div></div>
+    <div class="top-spacer"></div><div id="modeBadge"></div><span class="user-badge" id="userBadge"></span>
+    <button class="btn ghost" id="staffBtn">Staff List</button><button class="btn ghost" id="printBtn">Print</button><button class="btn success" id="saveBtn">Save</button><button class="btn ghost" id="logoutBtn">Logout</button>
+  </header>
+  <main class="content">
+    <div class="ward-layout">
+      <aside class="panel history-panel no-print"><div class="panel-title">Recent History</div><div class="history-list" id="historyList"><div class="panel-body muted">Loading…</div></div></aside>
+      <section class="panel">
+        <div class="tabs no-print" id="wardTabs">
+          <button class="tab active" data-tab="header">Header</button><button class="tab" data-tab="admission">Admission / Bed Count</button><button class="tab" data-tab="infection">Infection / Devices</button><button class="tab" data-tab="patients">Patient List</button><button class="tab" data-tab="consult">Consultation / Intubation</button><button class="tab" data-tab="nurses">Night Nurse</button>
+        </div>
+        <div class="panel-body" id="wardForm">
+          <section class="tab-page active" data-page="header">
+            <div class="section-title">Header Information</div>
+            <div class="form-grid">
+              <div class="field span-4"><label>Ward</label><input id="wardName" disabled></div>
+              <div class="field span-2"><label>Telephone</label><input id="wardPhone" disabled></div>
+              <div class="field span-2"><label>Fax</label><input id="wardFax" disabled></div>
+              <div class="field span-4"><label>Report Date</label><input id="memoDate" type="date"></div>
+            </div>
+            <div class="status-note" id="operatingStatus" style="margin-top:14px">This account is locked to one ward. Ward, telephone and fax details are loaded from the database.</div>
+          </section>
+          <section class="tab-page" data-page="admission">
+            <div class="right-actions no-print"><button class="btn secondary small" data-copy-section="admission">Get Previous Data</button></div>
+            <div id="admissionFields"></div>
+            <div class="subsection"><div class="section-title">Empty Bed Information</div><div id="emptyBedArea"></div></div>
+            <div class="subsection"><div class="section-title">Next Day Early Bird</div><div id="earlyBirdRows"></div><button class="btn secondary small no-print" id="addEarlyBird">+ Add Early Bird</button></div>
+          </section>
+          <section class="tab-page" data-page="infection">
+            <div class="right-actions no-print"><button class="btn secondary small" data-copy-section="infection">Get Previous Data</button></div>
+            <div class="subsection"><div class="section-title">Infection Control</div><div id="infectionFields"></div></div>
+            <div class="subsection"><div class="section-title">MV / NIV / HFNC / HD / CAPD</div><div id="deviceFields"></div></div>
+            <div class="subsection" id="additionalFieldsWrap"><div class="section-title">Additional Report Items</div><div id="additionalFields"></div></div>
+          </section>
+          <section class="tab-page" data-page="patients">
+            <div class="right-actions no-print"><button class="btn secondary small" data-copy-section="patients">Get Previous Data</button></div>
+            <div class="section-title">Patient List</div>
+            <label class="checkbox-line"><input type="checkbox" id="nilSpecial"> <b>Nil Special</b></label>
+            <div class="table-scroll" style="margin-top:10px"><table class="data-table"><thead><tr><th style="width:90px">Bed No.</th><th style="width:210px">Name</th><th>Diagnosis / Condition / Progress</th><th class="no-print" style="width:42px"></th></tr></thead><tbody id="patientRows"></tbody></table></div>
+            <button class="btn secondary small no-print" id="addPatient" style="margin-top:8px">+ Add Patient</button>
+          </section>
+          <section class="tab-page" data-page="consult">
+            <div class="right-actions no-print"><button class="btn secondary small" data-copy-section="consult">Get Previous Data</button></div>
+            <div class="section-title">Subspecialty Consultation</div>
+            <label class="checkbox-line"><input type="checkbox" id="nilConsultation"> <b>Nil Consultation</b> <span class="muted">(Fri/Sat/Day before PH)</span></label>
+            <div class="table-scroll" style="margin-top:10px"><table class="data-table"><thead><tr><th style="width:90px">Bed No.</th><th style="width:210px">Name</th><th>Pending consultation</th><th class="no-print" style="width:42px"></th></tr></thead><tbody id="consultRows"></tbody></table></div>
+            <button class="btn secondary small no-print" id="addConsult" style="margin:8px 0 18px">+ Add Row</button>
+            <div class="section-title">Intubation Record</div>
+            <label class="checkbox-line"><input type="checkbox" id="nilIntubation"> <b>Nil Intubation</b></label>
+            <div class="table-scroll" style="margin-top:10px"><table class="data-table"><thead><tr><th>Bed</th><th>Name &amp; Hosp No.</th><th>Diagnosis</th><th>Reason</th><th>Elective / Emergency</th><th>By Whom</th><th>Location</th><th>Outcome</th><th class="no-print"></th></tr></thead><tbody id="intubRows"></tbody></table></div>
+            <button class="btn secondary small no-print" id="addIntub" style="margin-top:8px">+ Add Row</button>
+          </section>
+          <section class="tab-page" data-page="nurses">
+            <div class="right-actions no-print"><button class="btn secondary small" data-copy-section="nurses">Get Previous Data</button></div>
+            <div class="section-title">Night Nurse</div>
+            <p class="muted">Choose a colleague from this ward's database or type any name freely for a travel / temporary nurse.</p>
+            <datalist id="staffSuggestions"></datalist><div id="nurseRows"></div><button class="btn secondary small no-print" id="addNurse">+ Add Nurse</button>
+            <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+            <div class="form-grid"><div class="field span-3"><label>No. of staff in AM duty</label><input id="staffAM"></div><div class="field span-3"><label>No. of staff in PM duty</label><input id="staffPM"></div></div>
+            <div class="section-title" style="margin-top:18px">Signature</div>
+            <div class="form-grid"><div class="field span-2"><label>Rank</label><select id="sigRank"><option>RN</option><option>EN</option><option>APN</option><option>Student Nurse</option></select></div><div class="field span-5"><label>Name</label><input id="sigName" list="staffSuggestions"></div><div class="field span-3"><label>Appointment</label><input id="sigAppt"></div></div>
+          </section>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="staffModal"><div class="modal-card"><div class="modal-head"><h2>Ward Staff Database</h2><button class="btn secondary small" data-close="#staffModal">Close</button></div><div class="modal-body"><p class="muted">Only colleagues linked to this ward are shown. Deactivating a staff record does not alter old reports.</p><div class="table-scroll"><table class="data-table"><thead><tr><th>Role</th><th>Name</th><th>Appointment</th><th>Status</th><th></th></tr></thead><tbody id="staffTableBody"></tbody></table></div><button class="btn secondary small" id="addStaff" style="margin-top:9px">+ Add Staff</button></div></div></div>
+<div class="modal" id="historyModal"><div class="modal-card" style="width:min(1050px,97vw)"><div class="modal-head"><h2 id="historyModalTitle">Historical Report</h2><button class="btn secondary small" id="printHistoryBtn">Print</button><button class="btn secondary small" data-close="#historyModal">Close</button></div><div class="modal-body" id="historyDetail"></div></div></div>
+<div id="wardPrintArea" class="hidden"></div>
+<script type="module" src="./ward.js"></script>
+</body>
+</html>

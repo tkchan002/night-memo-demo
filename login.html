@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Night Memo Login</title>
+  <link rel="stylesheet" href="./css/app.css">
+</head>
+<body class="login-page">
+  <main class="login-wrap">
+    <div class="login-brand">
+      <div class="brand-mark" style="margin:0 auto 10px;width:54px;height:54px;font-size:1.3rem">NM</div>
+      <h1>Night Memo</h1>
+      <p>Ward reporting, patrol night review and maintenance</p>
+      <div id="modeBadge"></div>
+    </div>
+    <div class="login-options">
+      <button class="login-option" data-role="ward"><div class="login-icon">🏥</div><h2>Ward Login</h2><p>Submit and review the night memo for the ward assigned to this account.</p></button>
+      <button class="login-option" data-role="manager"><div class="login-icon">📋</div><h2>Patrol Night Login</h2><p>Open the nightly summary table and read every ward's complete report.</p></button>
+      <button class="login-option" data-role="maintenance"><div class="login-icon">🛠️</div><h2>Night Memo Maintenance</h2><p>Manage wards, capacities, accounts, report items and lifecycle settings.</p></button>
+    </div>
+    <section class="login-box" id="loginBox">
+      <h2 id="loginTitle">Login</h2>
+      <form id="loginForm">
+        <div class="field" style="margin-bottom:12px"><label id="loginIdLabel">Account</label><input id="loginId" type="email" autocomplete="username" placeholder="e.g. c10@nightmemo.local" required></div>
+        <div class="field" style="margin-bottom:14px"><label>Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+        <div class="status-note hidden" id="demoHint" style="margin-bottom:12px"></div>
+        <div class="right-actions"><button type="button" class="btn secondary" id="backBtn">Back</button><button class="btn" id="loginBtn">Login</button></div>
+      </form>
+    </section>
+  </main>
+  <script type="module" src="./login.js"></script>
+</body>
+</html>

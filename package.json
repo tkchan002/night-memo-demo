@@ -1,0 +1,12 @@
+{
+  "name": "night-memo-supabase-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed-users": "node ./scripts/create-demo-users.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.4",
+    "dotenv": "^16.4.7"
+  }
+}
