@@ -22,30 +22,24 @@
 .manager-empty-state{text-align:center;color:#777;padding:50px 20px}
 @media(max-width:900px){.manager-summary{min-width:1050px}.report-grid.three,.report-grid.two{grid-template-columns:1fr}.report-head{display:block}.report-contact{text-align:left;margin-top:6px}}
 
-
-/* Manager print template editor */
+/* Stable manager status and isolated print editor */
+.manager-status{border:1px solid #777;padding:7px 10px;margin:0 0 10px;background:#f3f3f3;font-size:.85rem}
+.manager-status.info{background:#eef5ff;border-color:#7393b8}.manager-status.warning{background:#fff6d8;border-color:#b7a25b}.manager-status.error{background:#ffe9e7;border-color:#b76f69;color:#7a1d18}
+.template-isolation-note{border:1px solid #999;background:#f4f4f4;padding:7px 9px;margin-bottom:8px;font-size:.82rem}
+.template-editor-frame{display:block;width:100%;height:760px;border:1px solid #777;background:#d8d8d8}
+.template-frame-page{margin:0!important;background:#d8d8d8!important}.template-frame-main{padding:8px}
 .template-config-grid{display:grid;grid-template-columns:minmax(190px,1.2fr) minmax(180px,1fr) minmax(155px,.8fr) auto auto auto auto auto;gap:8px;align-items:end;margin-bottom:10px}
 .template-status-box{border:1px solid #777;background:#efefef;padding:6px 9px;min-height:31px;white-space:nowrap;align-self:end}
 .template-editor-shell{border:1px solid #777;background:#d8d8d8;padding:8px}
 .template-mode-row{display:flex;align-items:center;gap:12px;justify-content:space-between;margin-bottom:7px}
 .mini-tabs{display:flex;gap:2px}.mini-tab{font:inherit;border:1px solid #666;border-bottom-color:#333;background:#c8c8c8;padding:5px 12px;cursor:pointer}.mini-tab.active{background:#fff7c8;font-weight:700}
-.template-help{font-size:.8rem;color:#444}
-.template-pane{display:none}.template-pane.active{display:block}
+.template-help{font-size:.8rem;color:#444}.template-pane{display:none}.template-pane.active{display:block}
 .template-toolbar{display:flex;gap:4px;flex-wrap:wrap;align-items:center;border:1px solid #777;border-bottom:0;background:#ececec;padding:5px}
-.template-toolbar button,.template-toolbar select{font:inherit;min-height:27px;border:1px solid #777;background:#f7f7f7;padding:3px 7px}.template-toolbar button{cursor:pointer}.template-toolbar button:active{background:#fff2a8}
-.toolbar-sep{width:1px;height:24px;background:#999;margin:0 3px}
-.template-visual-editor{min-height:520px;background:white;border:1px solid #777;padding:24px 28px;overflow:auto;outline:none;line-height:1.35;font-family:Arial,Helvetica,sans-serif}
-.template-visual-editor:focus{box-shadow:inset 0 0 0 2px #f3db53}
-.template-token{display:inline-block;border:1px solid #3f6f98;background:#e8f3ff;color:#163e61;border-radius:2px;padding:2px 5px;margin:1px 2px;font:700 12px Tahoma,Arial,sans-serif;white-space:nowrap;user-select:all}
-.template-token-block{display:block;margin:8px 0;text-align:center;border-style:dashed;background:#f3f3f3;color:#555}
+.template-toolbar button,.template-toolbar select{font:inherit;min-height:27px;border:1px solid #777;background:#f7f7f7;padding:3px 7px}.template-toolbar button{cursor:pointer}.template-toolbar button:active{background:#fff2a8}.toolbar-sep{width:1px;height:24px;background:#999;margin:0 3px}
+.template-visual-editor{min-height:520px;background:#fff;border:1px solid #777;padding:24px 28px;overflow:auto;outline:none;line-height:1.35;font-family:Arial,Helvetica,sans-serif}.template-visual-editor:focus{box-shadow:inset 0 0 0 2px #f3db53}
+.template-token{display:inline-block;border:1px solid #3f6f98;background:#e8f3ff;color:#163e61;border-radius:2px;padding:2px 5px;margin:1px 2px;font:700 12px Tahoma,Arial,sans-serif;white-space:nowrap;user-select:all}.template-token-block{display:block;margin:8px 0;text-align:center;border-style:dashed;background:#f3f3f3;color:#555}
 .html-editor-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:8px}.html-editor-grid textarea{width:100%;font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;resize:vertical;min-height:470px}
-.template-token-reference{margin-top:8px;border:1px solid #aaa;background:#f4f4f4;padding:7px;font-size:.8rem}.template-token-reference code{display:inline-block;margin:2px 3px;padding:2px 4px;background:white;border:1px solid #bbb}
-.primary-pill{font-weight:700;background:#fff0a8!important}
-.manager-template-output{background:#fff!important}.manager-template-page{max-width:1200px;margin:0 auto;padding:12mm;background:#fff;color:#000}.manager-template-page .ward-link{color:inherit!important;text-decoration:none!important;cursor:default!important}.manager-page-break{break-after:page;page-break-after:always;height:0}
-.print-table-scroll{overflow:visible!important}.manager-template-page table{break-inside:auto}.manager-template-page tr{break-inside:avoid;break-after:auto}
+.template-token-reference{margin-top:8px;border:1px solid #aaa;background:#f4f4f4;padding:7px;font-size:.8rem}.template-token-reference code{display:inline-block;margin:2px 3px;padding:2px 4px;background:white;border:1px solid #bbb}.primary-pill{font-weight:700;background:#fff0a8!important}
+.manager-template-output{background:#fff!important}.manager-template-page{max-width:1200px;margin:0 auto;padding:12mm;background:#fff;color:#000}.manager-template-page .ward-link{color:inherit!important;text-decoration:none!important;cursor:default!important}.manager-page-break{break-after:page;page-break-after:always;height:0}.print-table-scroll{overflow:visible!important}.manager-template-page table{break-inside:auto}.manager-template-page tr{break-inside:avoid;break-after:auto}
 @media(max-width:1100px){.template-config-grid{grid-template-columns:repeat(2,minmax(170px,1fr))}.html-editor-grid{grid-template-columns:1fr}.template-mode-row{align-items:flex-start;flex-direction:column}}
-@media print{.manager-template-page{max-width:none;padding:0}.manager-template-output{margin:0!important}}
-
-/* Isolated print-template editor status. This message never blocks the manager tabs. */
-.template-editor-status{margin:0 0 10px;border:1px solid #9b7b00;background:#fff4b8;color:#4d3d00;padding:8px 10px;font-size:.85rem}
-.template-editor-status[hidden]{display:none!important}
+@media print{.manager-template-page{max-width:none;padding:0}.manager-template-output{margin:0!important}.template-editor-frame{display:none!important}}

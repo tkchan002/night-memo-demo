@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Manager Print Template</title>
+  <link rel="stylesheet" href="./css/legacy-shell.css">
+  <link rel="stylesheet" href="./css/manager.css">
+</head>
+<body class="legacy-page template-frame-page">
+  <main class="template-frame-main">
+    <div id="templateFrameStatus" class="manager-status info">Loading print editor...</div>
+
+    <div class="template-config-grid">
+      <div class="field"><label for="templateSelect">Template version</label><select id="templateSelect"></select></div>
+      <div class="field"><label for="templateName">Template name</label><input id="templateName" type="text" maxlength="100" value="Night Memo"></div>
+      <div class="field"><label for="templateEffectiveFrom">Effective from</label><input id="templateEffectiveFrom" type="date"></div>
+      <div class="template-status-box"><span>Status:</span> <strong id="templateStatus">--</strong></div>
+      <button class="pill" type="button" id="newTemplateBtn">New Draft</button>
+      <button class="pill" type="button" id="saveTemplateBtn">Save Draft</button>
+      <button class="pill" type="button" id="previewTemplateBtn">Preview</button>
+      <button class="pill primary-pill" type="button" id="publishTemplateBtn">Publish</button>
+    </div>
+
+    <div class="template-editor-shell">
+      <div class="template-mode-row">
+        <div class="mini-tabs">
+          <button type="button" class="mini-tab active" data-template-mode="visual">Visual Editor</button>
+          <button type="button" class="mini-tab" data-template-mode="html">HTML / CSS</button>
+        </div>
+        <div class="template-help">Free text is allowed. Use Insert for live report tables and fields.</div>
+      </div>
+
+      <div id="visualEditorPane" class="template-pane active">
+        <div class="template-toolbar" id="templateToolbar">
+          <button type="button" data-cmd="bold"><b>B</b></button>
+          <button type="button" data-cmd="italic"><i>I</i></button>
+          <button type="button" data-cmd="underline"><u>U</u></button>
+          <span class="toolbar-sep"></span>
+          <button type="button" data-cmd="justifyLeft">Left</button>
+          <button type="button" data-cmd="justifyCenter">Centre</button>
+          <button type="button" data-cmd="justifyRight">Right</button>
+          <span class="toolbar-sep"></span>
+          <select id="templateBlockFormat"><option value="p">Paragraph</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option></select>
+          <select id="insertTemplateToken"><option value="">Insert...</option><option value="report_date_display">Report Date</option><option value="report_date">Report Date (ISO)</option><option value="section">Memo Section</option><option value="ward_summary_table">Ward Summary Table</option><option value="infection_table">Infection / Device Table</option><option value="page_break">Page Break</option></select>
+        </div>
+        <div id="templateVisualEditor" class="template-visual-editor" contenteditable="true" spellcheck="true"></div>
+      </div>
+
+      <div id="htmlEditorPane" class="template-pane">
+        <div class="html-editor-grid">
+          <div class="field"><label for="templateHtmlEditor">HTML template</label><textarea id="templateHtmlEditor" rows="20" spellcheck="false"></textarea></div>
+          <div class="field"><label for="templateCssEditor">Additional print CSS</label><textarea id="templateCssEditor" rows="20" spellcheck="false" placeholder="Optional CSS. JavaScript is not allowed."></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="template-token-reference"><strong>Available live fields:</strong> <code>{{report_date_display}}</code> <code>{{report_date}}</code> <code>{{section}}</code> <code>{{ward_summary_table}}</code> <code>{{infection_table}}</code> <code>{{page_break}}</code></div>
+  </main>
+  <script type="module" src="./manager-template-page.js"></script>
+</body>
+</html>
