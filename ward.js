@@ -6,7 +6,10 @@ import {
   getPreviousReport, upsertWardReport
 } from './database.js';
 import { esc, todayISO, toDisplayDate, fullReportPayloadDefaults } from './app.js';
-import { renderFullReport } from './report-renderer.js';
+import {
+  DEFAULT_WARD_PRINT_SETTINGS, loadWardPrintSettings, saveWardPrintSettings, resetWardPrintSettings,
+  renderWardMemoHtml, writeWardMemoToIframe, printWardMemo
+} from './ward-print.js';
 
 const $ = (s,p=document)=>p.querySelector(s);
 const $$ = (s,p=document)=>[...p.querySelectorAll(s)];
@@ -229,13 +232,96 @@ function maintenanceManagedNotice(){showStatus('loading','Additional report item
 function histDeleteCurrent(){showStatus('error','Historical report deletion is disabled in the Supabase version.');}
 async function histReprint(){if(state.currentHist)await printReportObject(state.currentHist);}
 
-async function handleGen(mode){if(mode==='download')showStatus('loading','The browser print dialog will open. Choose “Save as PDF” as the destination.');await printCurrent(true);}
-async function printCurrent(autoSave=false){let report={report_date:$('#memoDate').value,payload:collectPayload(),bed_capacity_snapshot:state.capacity,updated_at:new Date().toISOString()};if(autoSave){const saved=await saveEntry();if(!saved)return;report=saved;}await printReportObject(report);}
-async function reportDocument(report,autoPrint=false){const items=await getReportItems(report.report_date);const cap=report.bed_capacity_snapshot??await getWardCapacity(state.ward.id,report.report_date);const html=renderFullReport({ward:state.ward,report,capacity:cap,items});const css=new URL('./css/app.css',location.href).href,pcss=new URL('./css/print.css',location.href).href;return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(state.ward.code)} ${esc(report.report_date)}</title><link rel="stylesheet" href="${css}"><link rel="stylesheet" href="${pcss}"></head><body><main class="content">${html}</main>${autoPrint?'<script>setTimeout(()=>window.print(),500)<\/script>':''}</body></html>`;}
-async function printReportObject(report){const win=window.open('','_blank','width=1200,height=850');if(!win){showStatus('error','Pop-up blocked. Allow pop-ups to print.');return;}win.document.write(await reportDocument(report,true));win.document.close();}
-async function openPdfSettings(){const report={report_date:$('#memoDate').value,payload:collectPayload(),bed_capacity_snapshot:state.capacity,updated_at:new Date().toISOString()};$('#pdfPreviewFrame').srcdoc=await reportDocument(report,false);$('#pdfSettingsModal').classList.add('show');}
-function closePdfSettings(){$('#pdfSettingsModal').classList.remove('show');}
-function printPdf(){const f=$('#pdfPreviewFrame');f.contentWindow?.focus();f.contentWindow?.print();}
-function applyPdfSettings(){showStatus('loading','Choose “Save as PDF” in the print dialog.');printPdf();}
+let pdfSettings=loadWardPrintSettings();
+let pdfDebounceTimer=null;
 
-Object.assign(window,{sT,hDTab,calcEmpty,addEmptyDetail,addEB,addPt,addCs,addIt,addNR,toggleNil,toggleNilConsult,toggleNilIntub,saveEntry,handleGen,openPdfSettings,closePdfSettings,printPdf,applyPdfSettings,toggleHistory,toggleStaffList,addStaffRow,getDataForTab,gdClose,gdConfirm,histReprint,histDeleteCurrent,maintenanceManagedNotice});
+function printContext(report,items,capacity){
+  return {
+    ward:state.ward, report, capacity, items, settings:pdfSettings,
+    logoUrl:new URL('./assets/heart-logo.png',location.href).href
+  };
+}
+
+async function getPrintContext(report){
+  const [items,capacity]=await Promise.all([
+    getReportItems(report.report_date),
+    report.bed_capacity_snapshot!=null?Promise.resolve(report.bed_capacity_snapshot):getWardCapacity(state.ward.id,report.report_date)
+  ]);
+  return printContext(report,items,capacity);
+}
+
+async function handleGen(mode){
+  if(mode==='download')showStatus('loading','The browser print dialog will open. Choose “Save as PDF” as the destination.');
+  await printCurrent(true);
+}
+async function printCurrent(autoSave=false){
+  let report={report_date:$('#memoDate').value,payload:collectPayload(),bed_capacity_snapshot:state.capacity,updated_at:new Date().toISOString()};
+  if(autoSave){const saved=await saveEntry();if(!saved)return;report=saved;}
+  await printReportObject(report);
+}
+async function printReportObject(report){
+  try{
+    const context=await getPrintContext(report);
+    await printWardMemo(context);
+    showStatus('success','Print dialog opened.');
+  }catch(e){
+    showStatus('error','Unable to open print dialog: '+(e.message||String(e)));
+    console.error(e);
+  }
+}
+
+function setPrintControl(id,value){const el=document.getElementById(id);if(el)el.value=value;}
+function loadPrintControls(){
+  const S=pdfSettings;
+  setPrintControl('pset_topTitle',S.topTitle);setPrintControl('pset_topContent',S.topContent);
+  setPrintControl('pset_boxTitle',S.boxTitle);setPrintControl('pset_boxContent',S.boxContent);
+  setPrintControl('pset_infLabel',S.infLabel);setPrintControl('pset_infValue',S.infValue);
+  setPrintControl('pset_devLabel',S.devLabel);setPrintControl('pset_devValue',S.devValue);
+  setPrintControl('pset_lineHeader',S.lineHeader);setPrintControl('pset_lineContent',S.lineContent);
+  setPrintControl('pset_consHeader',S.consHeader);setPrintControl('pset_consContent',S.consContent);
+  setPrintControl('pset_intubHeader',S.intubHeader);setPrintControl('pset_intubContent',S.intubContent);
+  setPrintControl('pset_nurseTitle',S.nurseTitle);setPrintControl('pset_nurseContent',S.nurseContent);
+  setPrintControl('pset_sigContent',S.sigContent);
+}
+function readPrintControls(){
+  const num=(id,fallback)=>{const n=parseFloat(document.getElementById(id)?.value);return Number.isFinite(n)?n:fallback;};
+  return {
+    topTitle:num('pset_topTitle',DEFAULT_WARD_PRINT_SETTINGS.topTitle),topContent:num('pset_topContent',DEFAULT_WARD_PRINT_SETTINGS.topContent),
+    boxTitle:num('pset_boxTitle',DEFAULT_WARD_PRINT_SETTINGS.boxTitle),boxContent:num('pset_boxContent',DEFAULT_WARD_PRINT_SETTINGS.boxContent),
+    infLabel:num('pset_infLabel',DEFAULT_WARD_PRINT_SETTINGS.infLabel),infValue:num('pset_infValue',DEFAULT_WARD_PRINT_SETTINGS.infValue),
+    devLabel:num('pset_devLabel',DEFAULT_WARD_PRINT_SETTINGS.devLabel),devValue:num('pset_devValue',DEFAULT_WARD_PRINT_SETTINGS.devValue),
+    lineHeader:num('pset_lineHeader',DEFAULT_WARD_PRINT_SETTINGS.lineHeader),lineContent:num('pset_lineContent',DEFAULT_WARD_PRINT_SETTINGS.lineContent),
+    consHeader:num('pset_consHeader',DEFAULT_WARD_PRINT_SETTINGS.consHeader),consContent:num('pset_consContent',DEFAULT_WARD_PRINT_SETTINGS.consContent),
+    intubHeader:num('pset_intubHeader',DEFAULT_WARD_PRINT_SETTINGS.intubHeader),intubContent:num('pset_intubContent',DEFAULT_WARD_PRINT_SETTINGS.intubContent),
+    nurseTitle:num('pset_nurseTitle',DEFAULT_WARD_PRINT_SETTINGS.nurseTitle),nurseContent:num('pset_nurseContent',DEFAULT_WARD_PRINT_SETTINGS.nurseContent),
+    sigContent:num('pset_sigContent',DEFAULT_WARD_PRINT_SETTINGS.sigContent)
+  };
+}
+async function previewCurrentMemo(){
+  const report={report_date:$('#memoDate').value,payload:collectPayload(),bed_capacity_snapshot:state.capacity,updated_at:new Date().toISOString()};
+  const context=await getPrintContext(report);
+  await writeWardMemoToIframe($('#pdfPreviewFrame'),context);
+}
+async function openPdfSettings(){
+  pdfSettings=loadWardPrintSettings();
+  loadPrintControls();
+  $('#pdfSettingsModal').classList.add('show');
+  await previewCurrentMemo();
+}
+function closePdfSettings(){clearTimeout(pdfDebounceTimer);$('#pdfSettingsModal').classList.remove('show');}
+function updatePdfPreviewDebounced(){
+  clearTimeout(pdfDebounceTimer);
+  pdfDebounceTimer=setTimeout(()=>updatePdfPreview(),250);
+}
+async function updatePdfPreview(){
+  pdfSettings=saveWardPrintSettings(readPrintControls());
+  await previewCurrentMemo();
+}
+async function resetPdfSettings(){
+  if(!confirm('Reset all font sizes to the original Night Memo defaults?'))return;
+  pdfSettings=resetWardPrintSettings();loadPrintControls();await previewCurrentMemo();
+}
+function printPdf(){const f=$('#pdfPreviewFrame');f.contentWindow?.focus();f.contentWindow?.print();}
+function applyPdfSettings(){pdfSettings=saveWardPrintSettings(readPrintControls());showStatus('loading','Choose “Save as PDF” in the print dialog.');printPdf();}
+
+Object.assign(window,{sT,hDTab,calcEmpty,addEmptyDetail,addEB,addPt,addCs,addIt,addNR,toggleNil,toggleNilConsult,toggleNilIntub,saveEntry,handleGen,openPdfSettings,closePdfSettings,printPdf,applyPdfSettings,updatePdfPreviewDebounced,resetPdfSettings,toggleHistory,toggleStaffList,addStaffRow,getDataForTab,gdClose,gdConfirm,histReprint,histDeleteCurrent,maintenanceManagedNotice});
