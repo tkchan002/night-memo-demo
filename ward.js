@@ -6,10 +6,6 @@ import {
   getPreviousReport, upsertWardReport
 } from './database.js';
 import { esc, todayISO, toDisplayDate, fullReportPayloadDefaults } from './app.js';
-import {
-  DEFAULT_WARD_PRINT_SETTINGS, loadWardPrintSettings, saveWardPrintSettings, resetWardPrintSettings,
-  renderWardMemoHtml, writeWardMemoToIframe, printWardMemo
-} from './ward-print.js';
 
 const $ = (s,p=document)=>p.querySelector(s);
 const $$ = (s,p=document)=>[...p.querySelectorAll(s)];
@@ -17,6 +13,18 @@ const state={access:null,ward:null,capacity:0,items:[],staff:[],report:null,hist
 const INF_MAP={iCRE:'i_CRE',iVRE:'i_VRE',iCOV:'i_COVID',iMDR:'i_MDRA',iCD:'i_CD',iInf:'i_Inf',iCA:'i_CA'};
 const DEV_MAP={dMV:'d_MV',dNIV:'d_NIV',dHF:'d_HFNC',dHD:'d_HD',dCA:'d_CAPD'};
 const DIRECT_KEYS=['admissionEC','admissionCC','discharge','death','transferIn','transferOut','totalPatientM'];
+
+const FALLBACK_WARD_PRINT_SETTINGS = Object.freeze({
+  topTitle:19, topContent:13, boxTitle:15, boxContent:12,
+  lineHeader:9, lineContent:11, consHeader:10, consContent:10,
+  intubHeader:9, intubContent:10, nurseTitle:9, nurseContent:11,
+  sigContent:11, infLabel:12, infValue:12, devLabel:12, devValue:12
+});
+let printModulePromise=null;
+async function getPrintModule(){
+  if(!printModulePromise) printModulePromise=import('./ward-print.js');
+  return printModulePromise;
+}
 
 init().catch(e=>{console.error(e);showStatus('error',e.message||String(e));});
 
@@ -232,7 +240,7 @@ function maintenanceManagedNotice(){showStatus('loading','Additional report item
 function histDeleteCurrent(){showStatus('error','Historical report deletion is disabled in the Supabase version.');}
 async function histReprint(){if(state.currentHist)await printReportObject(state.currentHist);}
 
-let pdfSettings=loadWardPrintSettings();
+let pdfSettings={...FALLBACK_WARD_PRINT_SETTINGS};
 let pdfDebounceTimer=null;
 
 function printContext(report,items,capacity){
@@ -262,7 +270,8 @@ async function printCurrent(autoSave=false){
 async function printReportObject(report){
   try{
     const context=await getPrintContext(report);
-    await printWardMemo(context);
+    const mod=await getPrintModule();
+    await mod.printWardMemo(context);
     showStatus('success','Print dialog opened.');
   }catch(e){
     showStatus('error','Unable to open print dialog: '+(e.message||String(e)));
@@ -286,24 +295,26 @@ function loadPrintControls(){
 function readPrintControls(){
   const num=(id,fallback)=>{const n=parseFloat(document.getElementById(id)?.value);return Number.isFinite(n)?n:fallback;};
   return {
-    topTitle:num('pset_topTitle',DEFAULT_WARD_PRINT_SETTINGS.topTitle),topContent:num('pset_topContent',DEFAULT_WARD_PRINT_SETTINGS.topContent),
-    boxTitle:num('pset_boxTitle',DEFAULT_WARD_PRINT_SETTINGS.boxTitle),boxContent:num('pset_boxContent',DEFAULT_WARD_PRINT_SETTINGS.boxContent),
-    infLabel:num('pset_infLabel',DEFAULT_WARD_PRINT_SETTINGS.infLabel),infValue:num('pset_infValue',DEFAULT_WARD_PRINT_SETTINGS.infValue),
-    devLabel:num('pset_devLabel',DEFAULT_WARD_PRINT_SETTINGS.devLabel),devValue:num('pset_devValue',DEFAULT_WARD_PRINT_SETTINGS.devValue),
-    lineHeader:num('pset_lineHeader',DEFAULT_WARD_PRINT_SETTINGS.lineHeader),lineContent:num('pset_lineContent',DEFAULT_WARD_PRINT_SETTINGS.lineContent),
-    consHeader:num('pset_consHeader',DEFAULT_WARD_PRINT_SETTINGS.consHeader),consContent:num('pset_consContent',DEFAULT_WARD_PRINT_SETTINGS.consContent),
-    intubHeader:num('pset_intubHeader',DEFAULT_WARD_PRINT_SETTINGS.intubHeader),intubContent:num('pset_intubContent',DEFAULT_WARD_PRINT_SETTINGS.intubContent),
-    nurseTitle:num('pset_nurseTitle',DEFAULT_WARD_PRINT_SETTINGS.nurseTitle),nurseContent:num('pset_nurseContent',DEFAULT_WARD_PRINT_SETTINGS.nurseContent),
-    sigContent:num('pset_sigContent',DEFAULT_WARD_PRINT_SETTINGS.sigContent)
+    topTitle:num('pset_topTitle',FALLBACK_WARD_PRINT_SETTINGS.topTitle),topContent:num('pset_topContent',FALLBACK_WARD_PRINT_SETTINGS.topContent),
+    boxTitle:num('pset_boxTitle',FALLBACK_WARD_PRINT_SETTINGS.boxTitle),boxContent:num('pset_boxContent',FALLBACK_WARD_PRINT_SETTINGS.boxContent),
+    infLabel:num('pset_infLabel',FALLBACK_WARD_PRINT_SETTINGS.infLabel),infValue:num('pset_infValue',FALLBACK_WARD_PRINT_SETTINGS.infValue),
+    devLabel:num('pset_devLabel',FALLBACK_WARD_PRINT_SETTINGS.devLabel),devValue:num('pset_devValue',FALLBACK_WARD_PRINT_SETTINGS.devValue),
+    lineHeader:num('pset_lineHeader',FALLBACK_WARD_PRINT_SETTINGS.lineHeader),lineContent:num('pset_lineContent',FALLBACK_WARD_PRINT_SETTINGS.lineContent),
+    consHeader:num('pset_consHeader',FALLBACK_WARD_PRINT_SETTINGS.consHeader),consContent:num('pset_consContent',FALLBACK_WARD_PRINT_SETTINGS.consContent),
+    intubHeader:num('pset_intubHeader',FALLBACK_WARD_PRINT_SETTINGS.intubHeader),intubContent:num('pset_intubContent',FALLBACK_WARD_PRINT_SETTINGS.intubContent),
+    nurseTitle:num('pset_nurseTitle',FALLBACK_WARD_PRINT_SETTINGS.nurseTitle),nurseContent:num('pset_nurseContent',FALLBACK_WARD_PRINT_SETTINGS.nurseContent),
+    sigContent:num('pset_sigContent',FALLBACK_WARD_PRINT_SETTINGS.sigContent)
   };
 }
 async function previewCurrentMemo(){
   const report={report_date:$('#memoDate').value,payload:collectPayload(),bed_capacity_snapshot:state.capacity,updated_at:new Date().toISOString()};
   const context=await getPrintContext(report);
-  await writeWardMemoToIframe($('#pdfPreviewFrame'),context);
+  const mod=await getPrintModule();
+  await mod.writeWardMemoToIframe($('#pdfPreviewFrame'),context);
 }
 async function openPdfSettings(){
-  pdfSettings=loadWardPrintSettings();
+  const mod=await getPrintModule();
+  pdfSettings=mod.loadWardPrintSettings();
   loadPrintControls();
   $('#pdfSettingsModal').classList.add('show');
   await previewCurrentMemo();
@@ -314,14 +325,16 @@ function updatePdfPreviewDebounced(){
   pdfDebounceTimer=setTimeout(()=>updatePdfPreview(),250);
 }
 async function updatePdfPreview(){
-  pdfSettings=saveWardPrintSettings(readPrintControls());
+  const mod=await getPrintModule();
+  pdfSettings=mod.saveWardPrintSettings(readPrintControls());
   await previewCurrentMemo();
 }
 async function resetPdfSettings(){
   if(!confirm('Reset all font sizes to the original Night Memo defaults?'))return;
-  pdfSettings=resetWardPrintSettings();loadPrintControls();await previewCurrentMemo();
+  const mod=await getPrintModule();
+  pdfSettings=mod.resetWardPrintSettings();loadPrintControls();await previewCurrentMemo();
 }
 function printPdf(){const f=$('#pdfPreviewFrame');f.contentWindow?.focus();f.contentWindow?.print();}
-function applyPdfSettings(){pdfSettings=saveWardPrintSettings(readPrintControls());showStatus('loading','Choose “Save as PDF” in the print dialog.');printPdf();}
+async function applyPdfSettings(){const mod=await getPrintModule();pdfSettings=mod.saveWardPrintSettings(readPrintControls());showStatus('loading','Choose “Save as PDF” in the print dialog.');printPdf();}
 
 Object.assign(window,{sT,hDTab,calcEmpty,addEmptyDetail,addEB,addPt,addCs,addIt,addNR,toggleNil,toggleNilConsult,toggleNilIntub,saveEntry,handleGen,openPdfSettings,closePdfSettings,printPdf,applyPdfSettings,updatePdfPreviewDebounced,resetPdfSettings,toggleHistory,toggleStaffList,addStaffRow,getDataForTab,gdClose,gdConfirm,histReprint,histDeleteCurrent,maintenanceManagedNotice});
