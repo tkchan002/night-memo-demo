@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ward Night Memo</title>
+  <link rel="stylesheet" href="./css/ward.css">
+</head>
+<body>
+<div id="statusBox"></div>
+
+<!-- Legacy-style Get Data confirmation modal -->
+<div id="gdOverlay">
+  <div id="gdModal" role="dialog" aria-modal="true" aria-labelledby="gdTitleText">
+    <div id="gdTitleBar"><span id="gdTitleText">Data Summary</span><button id="gdCloseBtn" onclick="gdClose()" title="Close">&#x2715;</button></div>
+    <div class="gd-section-hdr" id="gdSectionHdr"></div>
+    <div id="gdBody">
+      <div id="gdNoHistory">No saved history found.<br>Use the <b>Save</b> button first to record data.</div>
+      <table id="gdTable"><thead><tr><th>Form Label</th><th>Value from last saved entry</th></tr></thead><tbody id="gdTbody"></tbody></table>
+    </div>
+    <div id="gdFooter">
+      <div id="gdFooterMsg">The above data will be retrieved from the most recent saved entry and applied to this tab.</div>
+      <button class="gd-btn confirm" id="gdConfirmBtn" onclick="gdConfirm()">Confirm</button>
+      <button class="gd-btn" onclick="gdClose()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="appWrapper">
+  <!-- Left history sidebar -->
+  <div id="histSidebar">
+    <div id="histSidebarTitle">History</div>
+    <div id="histEntryList"><div id="histEmpty">No saved entries yet.</div></div>
+  </div>
+
+  <!-- Main app -->
+  <div class="app">
+    <div id="liveIndicator"></div>
+    <div class="tab-strip" id="tabStrip">
+      <button class="tab active" onclick="sT(0)">Header</button>
+      <button class="tab" onclick="sT(1)">Admission / Bed Count</button>
+      <button class="tab" onclick="sT(2)">Infection / Devices</button>
+      <button class="tab" onclick="sT(3)">Patient List</button>
+      <button class="tab" onclick="sT(4)">Consultation / Intubation</button>
+      <button class="tab" onclick="sT(5)">Night Nurse</button>
+    </div>
+
+    <div class="main-panel">
+      <div id="formWrap">
+        <!-- Tab 0 -->
+        <div class="tp active" id="t0">
+          <div class="sec-title">Header Information</div>
+          <div class="fr"><span class="fl"><b>From:</b></span><span class="fc" id="wardFrom" style="font-size:1.1rem;font-weight:600">Ward</span></div>
+          <div class="fr"><span class="fl"><b>Tel:</b></span><span class="fc" id="wardContact" style="font-size:1.1rem">—</span></div>
+          <div class="fr"><span class="fl"><b>Date:</b></span><span class="fc"><input type="date" id="memoDate"></span></div>
+        </div>
+
+        <!-- Tab 1 -->
+        <div class="tp" id="t1">
+          <button class="btn-get-corner" onclick="getDataForTab(1)">Get Data</button>
+          <div class="sec-title">Admission / Discharge / Death</div>
+          <div class="fr"><span class="fl">Admission E/C:</span><span class="fc"><select id="admissionEC" class="w55"></select></span></div>
+          <div class="fr"><span class="fl">Admission C/C:</span><span class="fc"><select id="admissionCC" class="w55"></select></span></div>
+          <hr class="sep">
+          <div class="fr"><span class="fl">Discharge:</span><span class="fc"><select id="discharge" class="w55"></select></span></div>
+          <div class="fr"><span class="fl">Death:</span><span class="fc"><select id="death" class="w55"></select></span></div>
+          <hr class="sep">
+          <div class="fr"><span class="fl">T/I (Transfer In) Gen:</span><span class="fc"><select id="transferIn" class="w55"></select></span></div>
+          <div class="fr"><span class="fl">T/O (Transfer Out) Gen:</span><span class="fc"><select id="transferOut" class="w55"></select></span></div>
+          <hr class="sep">
+          <div class="sec-title" style="font-size:1.15rem;margin-top:10px">Bed Count</div>
+          <div class="fr"><span class="fl">Total Patient:</span><span class="fc"><input type="number" id="totalPatientM" class="w55" min="0" placeholder="0" oninput="calcEmpty()"></span></div>
+          <div class="fr"><span class="fl" id="emptyBedLabel">Empty Bed:</span><span class="fc"><b id="emptyBedM" style="font-size:1.15rem">0</b><span id="emptyBedFormula" style="color:#6F6F6F;margin-left:6px"></span></span></div>
+          <div id="emptyDetailBlock" class="hidden">
+            <div style="font-weight:700;margin-bottom:6px">Empty Bed Information</div>
+            <div id="emptyDetailRows"></div>
+            <button class="btn-s" onclick="addEmptyDetail()">+ Add Empty Bed Detail</button>
+            <div class="legacy-subtle" style="margin-top:5px">Gender is recorded only here for wards with dynamic male/female bed assignment.</div>
+          </div>
+          <div id="dynamicAdmissionRows"></div>
+          <hr class="sep">
+          <div class="sec-title" style="font-size:1.15rem;margin-top:10px">Next Day Early Bird <span style="font-weight:400;font-size:0.85rem;color:#6F6F6F">eg. 15--&gt;KH3A</span></div>
+          <div id="ebRows"></div>
+          <button class="btn-s" onclick="addEB()">+ Add Early Bird</button>
+        </div>
+
+        <!-- Tab 2 -->
+        <div class="tp" id="t2">
+          <button class="btn-get-corner" onclick="getDataForTab(2)">Get Data</button>
+          <div class="sec-title">Infection Control</div>
+          <div class="fr"><span class="fl">CRE:</span><span class="fc" id="i_CRE"></span></div>
+          <div class="fr"><span class="fl">VRE:</span><span class="fc" id="i_VRE"></span></div>
+          <div class="fr"><span class="fl">COVID:</span><span class="fc" id="i_COVID"></span></div>
+          <div class="fr"><span class="fl">MDRA:</span><span class="fc" id="i_MDRA"></span></div>
+          <div class="fr"><span class="fl">CD+ve:</span><span class="fc" id="i_CD"></span></div>
+          <div class="fr"><span class="fl">Inf +ve:</span><span class="fc" id="i_Inf"></span></div>
+          <div class="fr"><span class="fl">Candida Auris Other Contact:</span><span class="fc" id="i_CA"></span></div>
+          <div id="customInfRows"></div>
+          <button class="btn-s" onclick="maintenanceManagedNotice()">+ Add Infection</button>
+          <hr class="sep">
+          <div class="sec-title" style="font-size:1.15rem;margin-top:8px">MV / NIV / HFNC / HD / CAPD</div>
+          <div class="fr"><span class="fl">MV:</span><span class="fc" id="d_MV"></span></div>
+          <div class="fr"><span class="fl">NIV:</span><span class="fc" id="d_NIV"></span></div>
+          <div class="fr"><span class="fl">HFNC:</span><span class="fc" id="d_HFNC"></span></div>
+          <div class="fr"><span class="fl">HD:</span><span class="fc" id="d_HD"></span></div>
+          <div class="fr"><span class="fl">CAPD:</span><span class="fc" id="d_CAPD"></span></div>
+          <div id="customDevRows"></div>
+          <button class="btn-s" onclick="maintenanceManagedNotice()">+ Add Device</button>
+          <div id="dynamicAdditionalWrap" class="hidden"><hr class="sep"><div class="sec-title" style="font-size:1.15rem;margin-top:8px">Additional Report Items</div><div id="dynamicAdditionalRows"></div></div>
+        </div>
+
+        <!-- Tab 3 -->
+        <div class="tp" id="t3">
+          <button class="btn-get-corner" onclick="getDataForTab(3)">Get Data</button>
+          <div class="sec-title">Patient List</div>
+          <div class="fr"><span class="fc"><label class="ctl"><input type="checkbox" id="nilCb" onchange="toggleNil()"><b style="color:var(--title-blue);font-size:1.1rem">Nil Special</b></label><span style="color:#6F6F6F">(displays "Nil Special" in PDF)</span></span></div>
+          <div id="patientEntryArea">
+            <table class="dt"><thead><tr><th style="width:70px">Bed No.</th><th style="width:180px">Name</th><th>Diagnosis / Condition / Progress</th><th style="width:36px"></th></tr></thead><tbody id="ptBody"></tbody></table>
+            <button class="btn-s" onclick="addPt()">+ Add Patient</button>
+          </div>
+        </div>
+
+        <!-- Tab 4 -->
+        <div class="tp" id="t4">
+          <button class="btn-get-corner" onclick="getDataForTab(4)">Get Data</button>
+          <div class="sec-title" style="font-size:1.15rem">Subspecialty Consultation <span style="font-weight:400;font-size:0.85rem;color:#6F6F6F">(Fri/Sat/Day before PH)</span></div>
+          <div class="fr"><span class="fc"><label class="ctl"><input type="checkbox" id="nilConsultCb" onchange="toggleNilConsult()"><b style="color:var(--title-blue);font-size:1.1rem">Nil Consultation</b></label><span style="color:#6F6F6F">(crosses out the blank consultation box in PDF)</span></span></div>
+          <div id="consultEntryArea">
+            <table class="dt"><thead><tr><th style="width:70px">Bed No</th><th style="width:180px">Name</th><th>Pending consultation</th><th style="width:36px"></th></tr></thead><tbody id="csBody"></tbody></table>
+            <button class="btn-s" onclick="addCs()">+ Add Row</button>
+          </div>
+          <hr class="sep">
+          <div class="sec-title" style="font-size:1.15rem;margin-top:8px">Intubation Record</div>
+          <div class="fr"><span class="fc"><label class="ctl"><input type="checkbox" id="nilIntubCb" onchange="toggleNilIntub()"><b style="color:var(--title-blue);font-size:1.1rem">Nil Intubation</b></label><span style="color:#6F6F6F">(crosses out the blank intubation box in PDF)</span></span></div>
+          <div id="intubEntryArea">
+            <table class="dt"><thead><tr>
+              <th style="width:45px">Bed No.</th><th>Name &amp; Hosp No.</th><th>Diagnosis</th><th style="width:70px">Reason</th><th style="width:80px">Elective / Emergency</th>
+              <th>By Whom<br><span style="font-weight:400;font-size:0.75rem;color:#6F6F6F;font-style:italic">e.g. Anaes / Parent team</span></th>
+              <th>Location<br><span style="font-weight:400;font-size:0.75rem;color:#6F6F6F;font-style:italic">e.g. Intubation Rm / Cubicle</span></th>
+              <th>Patient Outcome<br><span style="font-weight:400;font-size:0.75rem;color:#6F6F6F;font-style:italic">e.g. To ICU/G6/G10 / Stay in ward / death</span></th><th style="width:36px"></th>
+            </tr></thead><tbody id="itBody"></tbody></table>
+            <button class="btn-s" onclick="addIt()">+ Add Row</button>
+          </div>
+        </div>
+
+        <!-- Tab 5 -->
+        <div class="tp" id="t5">
+          <button class="btn-get-corner" onclick="getDataForTab(5)">Get Data</button>
+          <div class="sec-title">Night Nurse</div>
+          <div id="nrRows"></div>
+          <button class="btn-s" onclick="addNR()">+ Add Nurse</button>
+          <hr class="sep">
+          <div class="fr"><span class="fl">No of staff in AM duty:</span><span class="fc"><input type="text" id="staffAM" class="w55"></span></div>
+          <div class="fr"><span class="fl">No of staff in PM duty:</span><span class="fc"><input type="text" id="staffPM" class="w55"></span></div>
+          <hr class="sep">
+          <div class="fr"><span class="fl">Signature Rank:</span><span class="fc"><select id="sigRank" style="width:120px"><option value="RN">RN</option><option value="EN">EN</option><option value="APN">APN</option><option value="Student Nurse">Student Nurse</option></select></span></div>
+          <div class="fr"><span class="fl">Signature Name:</span><span class="fc"><input type="text" id="sigName" class="w280" placeholder="Name" list="signatureStaffList"></span></div>
+          <datalist id="signatureStaffList"></datalist>
+          <div class="fr"><span class="fl">Appointment:</span><span class="fc"><input type="text" id="sigAppt" class="w280"></span></div>
+        </div>
+      </div><!-- /#formWrap -->
+
+      <div id="histIdle">Select an entry from the History panel on the left to view it.</div>
+
+      <div id="staffListWrap">
+        <div style="background:#3273C6;color:#fff;padding:10px 16px;font-size:1.1rem;font-weight:700;">Staff Database Management</div>
+        <div style="padding:16px;">
+          <p style="color:#6F6F6F;font-size:0.9rem;margin-bottom:16px;">Manage ward staff here. These names will auto-populate when you select a role in Night Nurse entries and Signature section. Night Nurse name fields also accept unrestricted free text for travel / temporary nurses.</p>
+          <table class="dt" id="staffTable"><thead><tr><th style="width:120px">Role</th><th style="width:220px">Name</th><th style="width:150px">Appointment</th><th style="width:36px"></th></tr></thead><tbody id="staffListBody"></tbody></table>
+          <button class="btn-s" onclick="addStaffRow()">+ Add Staff</button>
+        </div>
+      </div>
+
+      <div id="histDetailWrap">
+        <div id="histViewBanner" style="background:#3273C6;color:#fff;padding:7px 16px;font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:12px;"><span id="histViewLabel">Viewing: --</span><span id="histViewSavedAt" style="font-weight:400;font-size:0.85rem;opacity:0.85;"></span></div>
+        <div class="hd-tab-strip">
+          <button class="hd-tab active" onclick="hDTab(0,this)">Admission / Bed</button>
+          <button class="hd-tab" onclick="hDTab(1,this)">Infection / Devices</button>
+          <button class="hd-tab" onclick="hDTab(2,this)">Patient List</button>
+          <button class="hd-tab" onclick="hDTab(3,this)">Consultation / Intubation</button>
+          <button class="hd-tab" onclick="hDTab(4,this)">Night Nurse</button>
+        </div>
+        <div id="hd0" class="hd-section active"></div><div id="hd1" class="hd-section"></div><div id="hd2" class="hd-section"></div><div id="hd3" class="hd-section"></div><div id="hd4" class="hd-section"></div>
+      </div>
+    </div><!-- /.main-panel -->
+
+    <div class="btn-bar">
+      <div id="normalBar">
+        <button class="pill" onclick="saveEntry()">Save</button>
+        <button class="pill" onclick="handleGen('print')">Print</button>
+        <button class="pill" onclick="handleGen('download')">Save PDF</button>
+        <button class="pill" onclick="openPdfSettings()">Preview</button>
+        <button class="pill" onclick="toggleHistory()">History</button>
+        <button class="pill" onclick="toggleStaffList()">Staff List</button>
+        <button class="pill" onclick="location.reload()">Reset</button>
+        <button class="pill" id="logoutBtn">Logout</button>
+      </div>
+      <div id="histBar"><button class="pill" id="hbReprint" disabled onclick="histReprint()">Reprint</button><button class="pill" id="hbDelete" disabled onclick="histDeleteCurrent()">Delete</button><button class="pill" onclick="toggleHistory()">Cancel</button></div>
+      <div id="staffBar"><button class="pill" onclick="toggleStaffList()">Close</button></div>
+    </div>
+
+    <!-- Legacy-style preview modal; rendering still comes from the Supabase report renderer. -->
+    <div id="pdfSettingsModal">
+      <div class="pdf-settings-content">
+        <div class="pdf-settings-header"><h3 style="margin:0;font-size:1.1rem;color:#333;">PDF Preview</h3><div style="display:flex;gap:8px;"><button class="pill" onclick="printPdf()">Print</button><button class="pill" onclick="applyPdfSettings()">Save PDF</button><button class="pill" onclick="closePdfSettings()">Close</button></div></div>
+        <div class="pdf-settings-body">
+          <div class="pdf-controls"><div id="previewNote"><b>Preview</b><br><br>This uses the current Supabase report data. Choose <b>Save PDF</b> and select your browser's “Save as PDF” destination.</div></div>
+          <div class="pdf-preview"><iframe id="pdfPreviewFrame" title="PDF Preview"></iframe></div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /.app -->
+</div>
+
+<script type="module" src="./ward.js"></script>
+</body>
+</html>
