@@ -234,7 +234,16 @@ async function getDataForTab(tab){state.gdTab=tab;const prev=await getPreviousRe
 function gdClose(){state.gdTab=null;state.gdPrev=null;$('#gdOverlay').classList.remove('show');}
 function gdConfirm(){if(!state.gdPrev||!state.gdTab)return;const p=state.gdPrev.payload||{},c=collectPayload();if(state.gdTab===1){DIRECT_KEYS.forEach(k=>c[k]=p[k]??c[k]);c.emptyBeds=p.emptyBeds||c.emptyBeds;c.earlyBirds=p.earlyBirds||[];state.items.filter(i=>!i.builtin&&(i.section==='admission'||i.section==='bedcount')).forEach(i=>c.dynamicItems[i.key]=p.dynamicItems?.[i.key]);}else if(state.gdTab===2){c.infBeds=p.infBeds||{};c.devBeds=p.devBeds||{};state.items.filter(i=>!i.builtin).forEach(i=>c.dynamicItems[i.key]=p.dynamicItems?.[i.key]);}else if(state.gdTab===3){c.nilSpecial=!!p.nilSpecial;c.patients=p.patients||[];}else if(state.gdTab===4){c.nilConsultation=!!p.nilConsultation;c.consultations=p.consultations||[];c.nilIntubation=!!p.nilIntubation;c.intubations=p.intubations||[];}else if(state.gdTab===5){c.nurses=p.nurses||[];c.staffAM=p.staffAM||'';c.staffPM=p.staffPM||'';c.sigRank=p.sigRank||'RN';c.sigName=p.sigName||'';c.sigAppt=p.sigAppt||'';}fillPayload(c);showStatus('success',`Copied data from ${toDisplayDate(state.gdPrev.report_date)}.`);gdClose();}
 
-function sT(n){if(state.historyMode||state.staffMode)return;$$('.tab','#tabStrip').forEach((b,i)=>b.classList.toggle('active',i===n));$$('.tp','#formWrap').forEach((p,i)=>p.classList.toggle('active',i===n));}
+function sT(n){
+  // Main tabs must always be able to return the user from History/Staff mode.
+  if(state.historyMode||state.staffMode) setFormMode();
+  state.historyMode=false; state.staffMode=false;
+  $$('.tab','#tabStrip').forEach((b,i)=>b.classList.toggle('active',i===Number(n)));
+  $$('.tp','#formWrap').forEach((p,i)=>p.classList.toggle('active',i===Number(n)));
+}
+document.addEventListener('ward-main-tab-selected',e=>{
+  state.historyMode=false; state.staffMode=false;
+});
 function hDTab(n,btn){$$('.hd-tab').forEach(x=>x.classList.remove('active'));$$('.hd-section').forEach(x=>x.classList.remove('active'));btn?.classList.add('active');$(`#hd${n}`)?.classList.add('active');}
 function maintenanceManagedNotice(){showStatus('loading','Additional report items are configured in Night Memo Maintenance.');}
 function histDeleteCurrent(){showStatus('error','Historical report deletion is disabled in the Supabase version.');}

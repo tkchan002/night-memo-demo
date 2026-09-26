@@ -74,10 +74,10 @@
             display:flex;flex-wrap:nowrap;align-items:flex-end;gap:3px;
             overflow-x:auto;white-space:nowrap;
             scrollbar-width:none;
-            position:relative;z-index:2;
+            position:relative;z-index:20;pointer-events:auto;
         }
         .tab-strip::-webkit-scrollbar{display:none;}
-        .tab-strip.disabled-strip{opacity:0.45;pointer-events:none;}
+        .tab-strip.disabled-strip{opacity:0.45;}
         .tab{
             appearance:none;height:29px;padding:5px 16px 4px;
             font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1;
@@ -85,7 +85,7 @@
             color:var(--tab-text);cursor:pointer;outline:none;
             border:1px solid var(--tab-border);border-bottom-color:#c4c4c6;
             box-shadow:inset 0 1px 0 rgba(255,255,255,0.9),0 1px 0 rgba(255,255,255,0.55);
-            position:relative;z-index:1;font-weight:normal;white-space:nowrap;margin-bottom:0;
+            position:relative;z-index:21;font-weight:normal;white-space:nowrap;margin-bottom:0;pointer-events:auto;
         }
         .tab.active{
             bottom:-1px;background:var(--workspace);color:var(--active-text);font-weight:700;
