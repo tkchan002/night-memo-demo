@@ -45,3 +45,7 @@
 .print-table-scroll{overflow:visible!important}.manager-template-page table{break-inside:auto}.manager-template-page tr{break-inside:avoid;break-after:auto}
 @media(max-width:1100px){.template-config-grid{grid-template-columns:repeat(2,minmax(170px,1fr))}.html-editor-grid{grid-template-columns:1fr}.template-mode-row{align-items:flex-start;flex-direction:column}}
 @media print{.manager-template-page{max-width:none;padding:0}.manager-template-output{margin:0!important}}
+
+/* Isolated print-template editor status. This message never blocks the manager tabs. */
+.template-editor-status{margin:0 0 10px;border:1px solid #9b7b00;background:#fff4b8;color:#4d3d00;padding:8px 10px;font-size:.85rem}
+.template-editor-status[hidden]{display:none!important}
