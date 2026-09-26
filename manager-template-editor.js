@@ -75,15 +75,23 @@ function bindEditor() {
 }
 
 function setUnavailableMessage(message) {
-  let el = document.getElementById('templateEditorStatusMessage');
+  // The template editor runs inside manager-template.html in its own iframe.
+  // Do not look for the parent manager page's [data-manager-page="template"]
+  // element here; it does not exist inside this document.
+  let el = document.getElementById('templateFrameStatus')
+    || document.getElementById('templateEditorStatusMessage');
+
   if (!el) {
     el = document.createElement('div');
     el.id = 'templateEditorStatusMessage';
-    el.className = 'template-editor-status';
-    const section = qs('[data-manager-page="template"]');
-    section.insertBefore(el, section.children[1] || null);
+    el.className = 'manager-status error template-editor-status';
+
+    const host = document.querySelector('.template-frame-main') || document.body;
+    host.insertBefore(el, host.firstChild || null);
   }
-  el.textContent = message;
+
+  el.textContent = message || '';
+  el.classList.toggle('error', !!message);
   el.hidden = !message;
 }
 
