@@ -34,18 +34,30 @@ function seedDemoState() {
     const w = wards.find(x=>x.code===a.ward_code);
     return {...a, auth_user_id:uid('demo-user'), ward_id:w?.id || null, display_name:a.display_name||a.login_id, created_at:new Date().toISOString(), updated_at:new Date().toISOString()};
   });
-  return {wards, operating_periods, capacity_history, ward_staff, report_items, ward_reports, accounts, audit_log:[]};
+  const manager_print_templates=[{...DEFAULT_MANAGER_PRINT_TEMPLATE,id:uid('mgrtpl'),version:1,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}];
+  return {wards, operating_periods, capacity_history, ward_staff, report_items, ward_reports, accounts, audit_log:[], manager_print_templates};
 }
 
 export function ensureDemoState(reset=false) {
   if (DB_MODE !== 'demo') return null;
   if (reset || !localStorage.getItem(DEMO_KEY)) localStorage.setItem(DEMO_KEY, JSON.stringify(seedDemoState()));
-  return JSON.parse(localStorage.getItem(DEMO_KEY));
+  const s=JSON.parse(localStorage.getItem(DEMO_KEY));
+  if(!Array.isArray(s.manager_print_templates)){
+    s.manager_print_templates=[{...DEFAULT_MANAGER_PRINT_TEMPLATE,id:uid('mgrtpl'),version:1,created_at:new Date().toISOString(),updated_at:new Date().toISOString()}];
+    localStorage.setItem(DEMO_KEY,JSON.stringify(s));
+  }
+  return s;
 }
 function demoRead(){ return ensureDemoState(false); }
 function demoWrite(s){ localStorage.setItem(DEMO_KEY, JSON.stringify(s)); return s; }
 function dateInRange(date, start, end){ return (!start || date>=start) && (!end || date<=end); }
 function asArray(v){ return Array.isArray(v) ? v : []; }
+
+const DEFAULT_MANAGER_PRINT_TEMPLATE = {
+  name:'Night Memo', status:'published', effective_from:'2000-01-01', effective_to:null,
+  html_template:`<div class="memo-template"><h1 style="text-align:center;text-decoration:underline;margin:0 0 4px">Night Memo ({{section}})</h1><div style="text-align:center;margin-bottom:10px">{{report_date_display}}</div>{{ward_summary_table}}<h2 style="margin:16px 0 6px">Infection / Device Details</h2>{{infection_table}}</div>`,
+  css_template:''
+};
 
 export function resetDemoDatabase(){ if(DB_MODE==='demo') ensureDemoState(true); }
 
@@ -270,3 +282,68 @@ export async function recordAudit(action,entityType,entityId,details={}) {
   const {error}=await supabase.from('audit_log').insert({action,entity_type:entityType,entity_id:entityId,details});
   if(error) console.warn('Audit insert failed',error);
 }
+
+// Manager print templates ----------------------------------------------------
+export async function getManagerPrintTemplates() {
+  if(DB_MODE==='demo') return demoRead().manager_print_templates.slice().sort((a,b)=>(b.version||0)-(a.version||0));
+  const {data,error}=await supabase.from('manager_print_templates').select('*').order('version',{ascending:false});
+  if(error) throw error; return data||[];
+}
+
+export async function getActiveManagerPrintTemplate(date=isoDate()) {
+  if(DB_MODE==='demo') {
+    return demoRead().manager_print_templates
+      .filter(t=>t.status==='published' && dateInRange(date,t.effective_from,t.effective_to))
+      .sort((a,b)=>(b.effective_from||'').localeCompare(a.effective_from||''))[0] || null;
+  }
+  const {data,error}=await supabase.from('manager_print_templates').select('*')
+    .eq('status','published').lte('effective_from',date)
+    .or(`effective_to.is.null,effective_to.gte.${date}`)
+    .order('effective_from',{ascending:false}).limit(1).maybeSingle();
+  if(error) throw error; return data;
+}
+
+export async function saveManagerPrintTemplate(row) {
+  const now=new Date().toISOString();
+  const clean={
+    name:row.name||'Night Memo', html_template:row.html_template||DEFAULT_MANAGER_PRINT_TEMPLATE.html_template,
+    css_template:row.css_template||'', status:'draft', effective_from:row.effective_from||null,
+    effective_to:row.effective_to||null, updated_at:now
+  };
+  if(DB_MODE==='demo') {
+    const s=demoRead();
+    if(row.id){
+      const i=s.manager_print_templates.findIndex(x=>x.id===row.id); if(i<0) throw new Error('Template not found.');
+      const current=s.manager_print_templates[i];
+      if(current.status==='published'){
+        const maxV=Math.max(0,...s.manager_print_templates.map(x=>Number(x.version)||0));
+        const draft={...clean,id:uid('mgrtpl'),version:maxV+1,created_at:now}; s.manager_print_templates.push(draft); demoWrite(s); return draft;
+      }
+      s.manager_print_templates[i]={...current,...clean}; demoWrite(s); return s.manager_print_templates[i];
+    }
+    const maxV=Math.max(0,...s.manager_print_templates.map(x=>Number(x.version)||0));
+    const draft={...clean,id:uid('mgrtpl'),version:maxV+1,created_at:now};s.manager_print_templates.push(draft);demoWrite(s);return draft;
+  }
+  if(row.id){
+    const {data:existing,error:e0}=await supabase.from('manager_print_templates').select('status').eq('id',row.id).single(); if(e0)throw e0;
+    if(existing.status==='published'){
+      const {data,error}=await supabase.from('manager_print_templates').insert(clean).select().single();if(error)throw error;return data;
+    }
+    const {data,error}=await supabase.from('manager_print_templates').update(clean).eq('id',row.id).select().single();if(error)throw error;return data;
+  }
+  const {data,error}=await supabase.from('manager_print_templates').insert(clean).select().single();if(error)throw error;return data;
+}
+
+export async function publishManagerPrintTemplate(id,effectiveFrom=isoDate()) {
+  if(DB_MODE==='demo') {
+    const s=demoRead(),target=s.manager_print_templates.find(x=>x.id===id); if(!target)throw new Error('Template not found.');
+    const prior=s.manager_print_templates.filter(x=>x.id!==id&&x.status==='published'&&x.effective_from<effectiveFrom&&(!x.effective_to||x.effective_to>=effectiveFrom)).sort((a,b)=>b.effective_from.localeCompare(a.effective_from))[0];
+    if(prior){const d=new Date(effectiveFrom+'T00:00:00');d.setDate(d.getDate()-1);prior.effective_to=d.toISOString().slice(0,10);}
+    s.manager_print_templates.filter(x=>x.id!==id&&x.status==='published'&&x.effective_from===effectiveFrom).forEach(x=>x.status='retired');
+    const future=s.manager_print_templates.filter(x=>x.id!==id&&x.status==='published'&&x.effective_from>effectiveFrom).sort((a,b)=>a.effective_from.localeCompare(b.effective_from))[0];
+    target.status='published';target.effective_from=effectiveFrom;target.effective_to=future?(()=>{const d=new Date(future.effective_from+'T00:00:00');d.setDate(d.getDate()-1);return d.toISOString().slice(0,10)})():null;target.updated_at=new Date().toISOString();demoWrite(s);return target;
+  }
+  const {data,error}=await supabase.rpc('publish_manager_print_template',{p_template_id:id,p_effective_from:effectiveFrom});
+  if(error) throw error; return data;
+}
+
